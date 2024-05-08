@@ -56,78 +56,88 @@ const ClientNewPage: React.FC = () => {
   // };
 
   const onSubmit = async (data: FormDataClient) => {
+    if (data.cvFile == null || data.cvFile?.length === 0) {
+      alert("Por favor adjunte su CV");
+      return false;
+    }
+
+    if (data.profilePicture == null || data.profilePicture?.length === 0) {
+      alert("Por favor adjunte su foto de perfil");
+      return false;
+    }
+
+    let cv_guid = "";
+    let profile_guid = "";
 
     try {
-console.log(data);
-      if (data.cvFile == null || data.cvFile?.length === 0){
-        alert("Por favor adjunte su CV");
-        return false;
-      }
-
-      if (data.profilePicture == null || data.profilePicture?.length === 0){
-        alert("Por favor adjunte su foto de perfil");
-        return false;
-      }
-
       const formDataCV = new FormData();
-      formDataCV.append('files', data.cvFile[0]);
-      let resultCV = await axios.post('https://localhost:7117/api/Attachment/cv', formDataCV);
+      formDataCV.append("files", data.cvFile[0]);
+      let resultCV = await axios.post(
+        "https://localhost:7117/api/Attachment/cv",
+        formDataCV
+      );
       console.log(resultCV);
-      let cv_guid = resultCV.data[0].id;
-
-      const formDataProfile = new FormData();
-      formDataProfile.append('files', data.profilePicture[0]);
-      let resultProfile = await axios.post('https://localhost:7117/api/Attachment/profile', formDataProfile);
-      let profile_guid = resultProfile.data[0].id;
-
-      let obj = {
-        "name": data.firstName,
-        "lastname": data.lastName,
-        "birthDate": data.birthdate,
-        "documentType": data.documentType,
-        "documentNumber": data.documentNumber,
-        "attachmentCV": cv_guid,
-        "attachmentProfile": profile_guid
-      };
-      let resultCreate = await axios.post('https://localhost:7117/api/Client/Create', obj);
-      console.log(resultCreate);
-      if(resultCreate.status !== 200){
-        if(resultCreate.status === 400){
-          alert(resultCreate.data.Message);
-          return false;
+      cv_guid = resultCV.data[0].id;
+    } catch (error: any) {
+      if (error.response.status === 400) {
+        if (error.response.data.Message) {
+          alert(error.response.data.Message);
         } else {
-          alert("Ocurrio un error interno del servidor");
-          return false;
+          alert(error.response.data.data.join(", "));
         }
+      } else {
+        alert("Ocurrio un error interno del servidor");
       }
+    }
 
+    try {
+      const formDataProfile = new FormData();
+      formDataProfile.append("files", data.profilePicture[0]);
+      let resultProfile = await axios.post(
+        "https://localhost:7117/api/Attachment/profile",
+        formDataProfile
+      );
+      profile_guid = resultProfile.data[0].id;
+    } catch (error: any) {
+      if (error.response.status === 400) {
+        if (error.response.data.Message) {
+          alert(error.response.data.Message);
+        } else {
+          alert(error.response.data.data.join(", "));
+        }
+      } else {
+        alert("Ocurrio un error interno del servidor");
+      }
+    }
 
+    if (!cv_guid || !profile_guid) {
+      alert("Por favor subir los archivos de CV o foto de perfil");
+      return false;
+    }
 
-      //   const formData = new FormData();
-      //   formData.append('firstName', data.firstName);
-      //   formData.append('lastName', data.lastName);
-      //   formData.append('birthdate', data.birthdate);
-      //   if (data.cvFile) {
-      //     formData.append('cvFile', data.cvFile[0]);
-      //   }
-      //   if (data.profilePicture) {
-      //     formData.append('profilePicture', data.profilePicture[0]);
-      //   }
-
-      //   // Aquí puedes enviar los datos del formulario al servidor
-      //   await axios.post('URL_DEL_ENDPOINT', formData);
-
-      //   // Limpia los campos del formulario después de enviar los datos
-      //   setValue('firstName', '');
-      //   setValue('lastName', '');
-      //   setValue('birthdate', '');
-      //   setValue('cvFile', undefined);
-      //   setValue('profilePicture', undefined);
-      //   setProfilePicturePreview(null);
-
+    try {
+      let obj = {
+        name: data.firstName,
+        lastname: data.lastName,
+        birthDate: data.birthdate,
+        documentType: data.documentType,
+        documentNumber: data.documentNumber,
+        attachmentCV: cv_guid,
+        attachmentProfile: profile_guid,
+      };
+      await axios.post("https://localhost:7117/api/Client/Create", obj);
       navigate("/");
-    } catch (error) {
-      console.error("Error al enviar el formulario:", error);
+    } catch (error: any) {
+      console.log(error);
+      if (error.response.status === 400) {
+        if (error.response.data.Message) {
+          alert(error.response.data.Message);
+        } else {
+          alert(error.response.data.data.join(", "));
+        }
+      } else {
+        alert("Ocurrio un error interno del servidor");
+      }
     }
   };
 
@@ -164,6 +174,9 @@ console.log(data);
           >
             <MenuItem value="DNI">DNI</MenuItem>
             <MenuItem value="RUC">RUC</MenuItem>
+            <MenuItem value="CARNET DE EXTRANJERIA">
+              CARNET DE EXTRANJERIA
+            </MenuItem>
           </TextField>
         </Grid>
         <Grid item xs={12} sm={6}>

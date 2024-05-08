@@ -1,8 +1,8 @@
 import React from 'react';
 import { Container } from "@mui/material";
 import ResponsiveAppBar from "./components/shared/AppBar";
-import ClientPage from "./pages/Modules/Client/ClientPage";
-import ClientNewPage from './pages/Modules/Client/ClienteNewPage';
+import ClientPage from "./pages/modules/client/ClientPage";
+import ClientNewPage from './pages/modules/client/ClienteNewPage';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 function App() {
